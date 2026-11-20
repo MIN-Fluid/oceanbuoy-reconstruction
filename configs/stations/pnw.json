@@ -1,0 +1,30 @@
+{
+  "46050": {
+    "name": "Stonewall Bank, 20NM W of Newport, OR",
+    "lat": 44.679,
+    "lon": -124.535,
+    "depth_m": 149,
+    "pgm": "NDBC 3-meter foam buoy, SCOOP payload"
+  },
+  "46029": {
+    "name": "Columbia River Bar, 20NM W of Columbia River mouth",
+    "lat": 46.148,
+    "lon": -124.508,
+    "depth_m": 135,
+    "pgm": "NDBC buoy, SCOOP payload"
+  },
+  "46041": {
+    "name": "Cape Elizabeth, 45NM NW of Aberdeen, WA",
+    "lat": 47.352,
+    "lon": -124.739,
+    "depth_m": 131,
+    "pgm": "NDBC 3-meter discus w/ seal cage, SCOOP payload"
+  },
+  "46089": {
+    "name": "Tillamook, OR, 85NM WNW of Tillamook, OR",
+    "lat": 45.928,
+    "lon": -125.815,
+    "depth_m": 2360,
+    "pgm": "NDBC 3-meter discus w/ seal cage, SCOOP payload"
+  }
+}

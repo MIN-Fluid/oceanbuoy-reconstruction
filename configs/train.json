@@ -1,0 +1,28 @@
+{
+ "neural": {
+  "loss": "mse_metres",
+  "lr": 0.0003,
+  "betas": [
+   0.9,
+   0.999
+  ],
+  "eps": 1e-08,
+  "weight_decay": 0.01,
+  "batch_size": 48,
+  "schedule": "warmup_cosine",
+  "warmup_steps": 1000,
+  "max_steps": 60000,
+  "end_factor": 0.05,
+  "eval_interval": 1000,
+  "min_steps": 6000,
+  "patience_evals": 15,
+  "val_batch": 8192,
+  "chunk_batches": 200,
+  "device": "cuda"
+ },
+ "ridge": {
+  "solver": "direct",
+  "boundary_tolerance": 0.001,
+  "chunk_rows": 200000
+ }
+}

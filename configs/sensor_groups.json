@@ -1,0 +1,38 @@
+{
+ "qc": {
+  "variables": [
+   "WVHT",
+   "DPD",
+   "APD"
+  ],
+  "rule": "every run found by scripts/find_wave_faults.py (WVHT < 0.1 m for >= 12 h, no DPD in the run, median WVHT of the other buoys >= 0.5 m) has its wave variables set to NaN at its buoy over its hours; every run lies in the training years, so the validation and test years are unchanged"
+ },
+ "groups": {
+  "wave": [
+   "WVHT",
+   "DPD",
+   "APD"
+  ],
+  "anemometer": [
+   "WSPD",
+   "WDIR"
+  ],
+  "barometer": [
+   "PRES"
+  ],
+  "water_temperature": [
+   "WTMP"
+  ]
+ },
+ "group_order": [
+  "wave",
+  "anemometer",
+  "barometer",
+  "water_temperature"
+ ],
+ "met_groups": [
+  "anemometer",
+  "barometer",
+  "water_temperature"
+ ]
+}

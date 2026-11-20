@@ -1,0 +1,13 @@
+{
+ "base": "socal",
+ "region_index": 4,
+ "added": [
+  "46239",
+  "46047"
+ ],
+ "aligned": "data/aligned/socal12.npz",
+ "stations": "data/aligned/socal12_stations.json",
+ "max_neighbors": 11,
+ "max_tokens": 12,
+ "rule": "the ten Southern California buoys plus 46239 and 46047 on the same hourly grid; the normalization constants are those of Southern California"
+}

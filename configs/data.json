@@ -1,0 +1,56 @@
+{
+ "variables": [
+  "WVHT",
+  "DPD",
+  "APD",
+  "WDIR",
+  "WSPD",
+  "PRES",
+  "WTMP"
+ ],
+ "units": {
+  "WVHT": "m",
+  "DPD": "s",
+  "APD": "s",
+  "WDIR": "degree_true",
+  "WSPD": "m s-1",
+  "PRES": "hPa",
+  "WTMP": "degree_Celsius"
+ },
+ "splits": {
+  "train": {
+   "idx_start": 1,
+   "idx_end": 61368
+  },
+  "val": {
+   "idx_start": 61369,
+   "idx_end": 70128
+  },
+  "test": {
+   "idx_start": 70129,
+   "idx_end": 87672
+  }
+ },
+ "norm_variables": [
+  "WVHT",
+  "DPD",
+  "APD",
+  "WSPD",
+  "PRES",
+  "WTMP"
+ ],
+ "sources": {
+  "socal": {
+   "aligned": "data/aligned/socal.npz",
+   "stations": "data/aligned/socal_stations.json"
+  },
+  "gom": {
+   "aligned": "data/aligned/gom.npz",
+   "stations": "data/aligned/gom_stations.json"
+  },
+  "pnw": {
+   "aligned": "data/aligned/pnw.npz",
+   "stations": "data/aligned/pnw_stations.json"
+  }
+ }
+}

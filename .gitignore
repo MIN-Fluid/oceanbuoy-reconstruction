@@ -1,0 +1,15 @@
+data/aligned/
+data/obs_unscreened/
+data/obs/
+data/qc/
+data/norm/
+data/samples/
+data/outage_patterns/
+data/raw/download_log.json
+models/interp/
+predictions/
+results/
+.snakemake/
+__pycache__/
+*.pyc
+*.tmp

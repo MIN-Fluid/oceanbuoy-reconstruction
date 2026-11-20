@@ -1,0 +1,39 @@
+{
+ "common": {
+  "gelu_approximate": "none",
+  "dropout": 0.1,
+  "head_hidden": 96,
+  "init": "pytorch_default"
+ },
+ "token_mlp": {
+  "hidden": 451,
+  "params": 347012
+ },
+ "mlp": {
+  "hidden": 451,
+  "params": {
+   "socal": 314540,
+   "gom": 287480,
+   "pnw": 273950
+  }
+ },
+ "attention": {
+  "d_model": 96,
+  "n_layers": 3,
+  "n_heads": 4,
+  "d_ff": 384,
+  "attn_dropout": 0.0,
+  "norm": "pre_ln",
+  "params": 347329
+ },
+ "determinism": {
+  "use_deterministic_algorithms": true,
+  "cudnn_benchmark": false,
+  "allow_tf32": false,
+  "sdp_backend": "math",
+  "mha_fastpath": false,
+  "cublas_workspace_config": ":4096:8",
+  "cpu_threads": 12,
+  "cuda_device": 0
+ }
+}

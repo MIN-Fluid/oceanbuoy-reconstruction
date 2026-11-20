@@ -1,0 +1,25 @@
+{
+ "max_steps": 5000,
+ "lr": 3e-05,
+ "variants": {
+  "ft_emb": {
+   "trainable": [
+    "embed"
+   ],
+   "dropout_key": 101
+  },
+  "ft_enc": {
+   "trainable": [
+    "blocks"
+   ],
+   "dropout_key": 102
+  },
+  "ft": {
+   "trainable": [
+    "embed",
+    "blocks"
+   ],
+   "dropout_key": 105
+  }
+ }
+}

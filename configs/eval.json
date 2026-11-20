@@ -1,0 +1,24 @@
+{
+ "predict": {
+  "device": "cpu",
+  "batch": 4096
+ },
+ "score": {
+  "n_boot": 10000,
+  "ci": [
+   2.5,
+   97.5
+  ],
+  "boot_seed": 20261001
+ },
+ "sets": {
+  "test": {
+   "min_live": 1,
+   "rule": "every test-year (target, hour) at which the target reported WVHT and at least min_live other buoys reported WVHT; nothing is drawn"
+  },
+  "strata": {
+   "min_stratum_n": 500,
+   "rule": "test samples grouped by the number of reporting neighbours k; groups with fewer than min_stratum_n samples at the low end are pooled into one group"
+  }
+ }
+}

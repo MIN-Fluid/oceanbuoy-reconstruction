@@ -1,0 +1,13 @@
+{
+ "stream": {
+  "n_samples": 2880000,
+  "max_neighbors": 9,
+  "min_live": 1,
+  "drop_max": 5,
+  "rule": "draw (target, hour) uniformly among the training-year pairs at which the target reported WVHT and at least min_live other buoys reported WVHT"
+ },
+ "val_set": {
+  "mask_seed": 20260930,
+  "rule": "every (target, validation-year hour) at which the target reported WVHT and at least min_live other buoys reported WVHT"
+ }
+}

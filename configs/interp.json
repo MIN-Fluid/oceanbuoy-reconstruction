@@ -1,0 +1,42 @@
+{
+ "boundary_tolerance": 0.001,
+ "idw": {
+  "min_distance_km": 1.0,
+  "rule": "weights 1 / max(d, min_distance_km)^p over the input neighbours, normalized to sum 1; p is the value of configs/design.json interp.idw_search with the lowest RMSE on the 2016-2023 fit rows"
+ },
+ "kriging": {
+  "fit": "rho_ij = C_ij / sqrt(C_ii C_jj), C the WVHT covariance of each station pair over the 2016-2023 hours both reported (np.cov, ddof 1); rho0 and L by least squares of log rho on d over the pairs with positive covariance (log rho = log rho0 - d / L); c0 = rho0 times the mean of C_ii",
+  "min_overlap_hours": 1000,
+  "min_positive_pairs": 4,
+  "nugget_m2": 0.01,
+  "min_neighbours": 2
+ },
+ "aniso": {
+  "ratios": [
+   1.0,
+   0.8,
+   0.6,
+   0.5,
+   0.4,
+   0.3,
+   0.2,
+   0.15,
+   0.1
+  ],
+  "angles_deg": [
+   0,
+   15,
+   30,
+   45,
+   60,
+   75,
+   90,
+   105,
+   120,
+   135,
+   150,
+   165
+  ],
+  "rule": "separations measured after rotating by the angle and stretching the minor axis by 1 / ratio; c0 and L refitted for every candidate with the kriging fit; the candidate with the lowest RMSE on the 2016-2023 fit rows is selected (stored as val_rmse) (ratio 1 is tried once, at angle 0). The angle is circular and has no edge; the ratio has an edge at its smallest value and follows the boundary rule"
+ }
+}

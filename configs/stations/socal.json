@@ -1,0 +1,72 @@
+{
+  "46011": {
+    "name": "Santa Maria (21NM NW of Point Arguello, CA)",
+    "lat": 34.937,
+    "lon": -120.999,
+    "depth_m": 416,
+    "pgm": "NDBC"
+  },
+  "46054": {
+    "name": "West Santa Barbara Channel, CA",
+    "lat": 34.274,
+    "lon": -120.468,
+    "depth_m": 454,
+    "pgm": "NDBC"
+  },
+  "46053": {
+    "name": "East Santa Barbara Channel, CA",
+    "lat": 34.246,
+    "lon": -119.842,
+    "depth_m": 417,
+    "pgm": "NDBC"
+  },
+  "46069": {
+    "name": "South Santa Rosa Island, CA",
+    "lat": 33.657,
+    "lon": -120.227,
+    "depth_m": 985,
+    "pgm": "NDBC"
+  },
+  "46025": {
+    "name": "Santa Monica Basin, CA",
+    "lat": 33.765,
+    "lon": -119.077,
+    "depth_m": 868,
+    "pgm": "NDBC"
+  },
+  "46028": {
+    "name": "Cape San Martin, CA",
+    "lat": 35.763,
+    "lon": -121.9,
+    "depth_m": 1136,
+    "pgm": "NDBC"
+  },
+  "46218": {
+    "name": "Harvest, CA (071)",
+    "lat": 34.452,
+    "lon": -120.78,
+    "depth_m": 550,
+    "pgm": "CDIP/Scripps (waverider buoy)"
+  },
+  "46219": {
+    "name": "San Nicolas Island, CA (067)",
+    "lat": 33.226,
+    "lon": -119.891,
+    "depth_m": 315,
+    "pgm": "CDIP/Scripps (waverider buoy)"
+  },
+  "46251": {
+    "name": "Santa Cruz Basin, CA (203)",
+    "lat": 33.769,
+    "lon": -119.565,
+    "depth_m": 1890,
+    "pgm": "CDIP/Scripps (waverider buoy)"
+  },
+  "46259": {
+    "name": "Santa Lucia Escarpment, CA (222)",
+    "lat": 34.774,
+    "lon": -121.491,
+    "depth_m": 650,
+    "pgm": "CDIP/Scripps, ops: USACE (waverider buoy)"
+  }
+}

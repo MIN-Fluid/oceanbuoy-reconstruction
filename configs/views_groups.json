@@ -1,0 +1,17 @@
+{
+ "design": {
+  "target_block_values": [
+   "WSPD",
+   "PRES",
+   "WTMP",
+   "WDIR_sin",
+   "WDIR_cos"
+  ],
+  "target_block_flags": [
+   "WDIR",
+   "WSPD",
+   "PRES",
+   "WTMP"
+  ]
+ }
+}

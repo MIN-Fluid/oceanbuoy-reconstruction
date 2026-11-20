@@ -1,0 +1,44 @@
+{
+  "42001": {
+    "name": "Mid Gulf, 180NM S of Southwest Pass, LA",
+    "lat": 25.922,
+    "lon": -89.638,
+    "depth_m": 3195,
+    "pgm": "NDBC 3-meter foam buoy, SCOOP payload"
+  },
+  "42002": {
+    "name": "West Gulf, 207NM E of Brownsville, TX",
+    "lat": 25.95,
+    "lon": -93.78,
+    "depth_m": 3208,
+    "pgm": "NDBC 3-meter foam buoy, SCOOP payload"
+  },
+  "42019": {
+    "name": "Freeport, TX, 60NM S of Freeport, TX",
+    "lat": 27.908,
+    "lon": -95.343,
+    "depth_m": 85,
+    "pgm": "NDBC buoy, SCOOP payload"
+  },
+  "42020": {
+    "name": "Corpus Christi, TX, 60NM SSE of Corpus Christi, TX",
+    "lat": 26.97,
+    "lon": -96.679,
+    "depth_m": 86,
+    "pgm": "NDBC 3-meter discus buoy, SCOOP payload"
+  },
+  "42035": {
+    "name": "Galveston, TX, 22NM E of Galveston, TX",
+    "lat": 29.235,
+    "lon": -94.41,
+    "depth_m": 15.5,
+    "pgm": "NDBC 3-meter foam buoy, SCOOP payload"
+  },
+  "42040": {
+    "name": "Luke Offshore Test Platform, 63NM S of Dauphin Island, AL",
+    "lat": 29.207,
+    "lon": -88.237,
+    "depth_m": 192,
+    "pgm": "NDBC 3-meter foam buoy, SCOOP payload"
+  }
+}
