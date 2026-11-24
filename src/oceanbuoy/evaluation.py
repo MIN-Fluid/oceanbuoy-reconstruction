@@ -41,6 +41,22 @@ def weighted_sq(pred: np.ndarray, truth: np.ndarray, W: list[np.ndarray]) -> tup
     return ens, members
 
 
+def complete_sq(pred: np.ndarray, truth: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Squared error in a complete outage (pattern 0, no sensor of the target), of the ensemble and of each member (Eq. 5)."""
+    return (pred[0].mean(axis=1) - truth) ** 2, (pred[0] - truth[:, None]) ** 2
+
+
+def partial_sq(pred: np.ndarray, truth: np.ndarray, W: list[np.ndarray]) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Squared error in partial outages (patterns 1-7 weighted by the target's training-year shares, renormalized to sum to one, Eq. 5),
+    of the ensemble and of each member; ok marks the samples whose target has partial outages (the NDBC buoys)."""
+    den = sum(np.asarray(W[p], float) for p in range(1, 8))
+    ok = den > 0
+    safe = np.where(ok, den, 1.0)
+    ens = sum(np.asarray(W[p], float) * (pred[p].mean(axis=1) - truth) ** 2 for p in range(1, 8)) / safe
+    mem = sum(np.asarray(W[p], float)[:, None] * (pred[p] - truth[:, None]) ** 2 for p in range(1, 8)) / safe[:, None]
+    return np.where(ok, ens, np.nan), np.where(ok[:, None], mem, np.nan), ok
+
+
 def outage_type_sq(pred: np.ndarray, truth: np.ndarray, W: list[np.ndarray]) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     E = [pred[p].mean(axis=1) - truth for p in range(8)]
     den = sum(np.broadcast_to(np.asarray(W[p], float), E[p].shape[:1]) for p in range(1, 8))

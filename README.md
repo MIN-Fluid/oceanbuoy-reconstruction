@@ -1,10 +1,10 @@
-# An attention model for real-time wave height reconstruction from incomplete buoy networks
+# A buoy-token attention model for real-time significant wave height reconstruction during outages
 
 Code, data, and trained models for the paper of the same title (Oh, Seo, Woo, Jeon, and Lee).
 The repository reproduces the preprocessing, the training and the inference of every method, and the
-evaluation of Section 4.1 (accuracy by the number of reporting neighbors and the type of outage, in the three networks),
-Section 4.2 (adding buoys to the network), and Appendix B (accuracy of the ensemble members).
-It does not include the analyses of Sections 4.3 and 4.4, the tables of Section 2, or the figures.
+evaluation of Section 4.2 (accuracy by region and by the number of reporting neighbors, in complete outages), Section 4.3
+(complete and partial outages), Section 4.4 (adding buoys to the network), and Appendix B (accuracy of the ensemble members).
+It does not include the analyses of Sections 4.1 and 4.5, the tables of Section 2, or the figures.
 
 ## Contents
 
@@ -22,7 +22,7 @@ It does not include the analyses of Sections 4.3 and 4.4, the tables of Section 
 |---|---|
 | `config.py`, `io.py`, `rng.py` | Paths, settings, and seeds; writing files; the random-number streams |
 | `data.py`, `sensor_groups.py`, `states.py` | Hourly records, removal of wave-sensor faults, normalization, sensor groups, outage patterns |
-| `samples.py`, `build_samples.py`, `validation.py` | Training and validation samples with emulated outages, the validation RMSE under recorded outages |
+| `samples.py`, `build_samples.py`, `validation.py` | Training and validation samples with emulated outages, the validation RMSE weighted over the eight outage patterns |
 | `views.py` | Inputs: tokens for the attention model and the token MLP, fixed rows for the ridge regression and the MLP |
 | `models.py`, `train.py`, `ridge.py` | The networks, their training (`fit`) and fine-tuning, the ridge regression |
 | `interp.py` | The interpolators: inverse-distance weighting (IDW), ordinary kriging (OK), and anisotropic kriging (AK) |
@@ -32,7 +32,7 @@ It does not include the analyses of Sections 4.3 and 4.4, the tables of Section 
 ## Names
 
 The regions are `socal` (Southern California, ten buoys), `gom` (Gulf of Mexico, six), and `pnw` (Pacific Northwest, four).
-`socal12` is the Southern California network with the two added buoys of Section 4.2, 46239 and 46047.
+`socal12` is the Southern California network with the two added buoys of Section 4.4, 46239 and 46047.
 The training years are 2016–2022, the validation year 2023, and the test years 2024 and 2025. The six members of each
 learned method and of the attention model are trained with the seeds 20260805 to 20260810, written `s05` to `s10` in file names.
 
@@ -43,7 +43,7 @@ learned method and of the attention model are trained with the seeds 20260805 to
 | Token MLP | `models/token_mlp/<region>/sNN.pt` | `predictions/token_mlp/` | `token_mlp` |
 | Attention model | `models/attention/<region>/sNN.pt` | `predictions/attention/` | `attention` |
 | IDW, OK, AK | `models/interp/<region>.json` | `predictions/idw|ok|ak/` | `idw`, `ok`, `ak` |
-| Base (Section 4.2) | the attention model of `socal` | `predictions/attention/socal.nc` | `base` |
+| Base (Section 4.4) | the attention model of `socal` | `predictions/attention/socal.nc` | `base` |
 | None | the same model, with the added buoys as input | `predictions/expansion/none.nc` | `none` |
 | FT-emb, FT-enc, FT | `models/expansion/ft_emb|ft_enc|ft/` | `predictions/expansion/ft_emb|ft_enc|ft.nc` | `ft_emb`, `ft_enc`, `ft` |
 | Retrain | `models/expansion/retrain/` | `predictions/expansion/retrain.nc` | `retrain` |
@@ -79,7 +79,7 @@ This runs, in order: alignment of the raw files to the hourly grid (`data/aligne
 the removal of wave-sensor faults (`data/obs_unscreened/`, `data/qc/`, `data/obs/`), normalization constants
 (`data/norm/`), the test samples (`data/samples/test/`), the outage patterns of `socal12` (`data/outage_patterns/`),
 the fit and the estimates of the interpolators (`models/interp/`, `predictions/idw|ok|ak/`), the estimates of the
-learned methods and the attention model from the trained models, the estimates of Section 4.2 (`predictions/expansion/`,
+learned methods and the attention model from the trained models, the estimates of Section 4.4 (`predictions/expansion/`,
 `predictions/added_buoys/`), and the evaluation (`results/`).
 The trained models in `models/` are used as they are, so that no training is run, and the evaluation gives the
 numbers of the paper. Other versions of the numerical libraries can change the last digits of the results (by about
@@ -109,7 +109,7 @@ python scripts/train.py --model attention --region socal --seed 20260805
 ```
 
 `--model` is `attention`, `token_mlp`, `mlp` (with `--target`, the index of the target buoy), or `ridge`.
-The models of Section 4.2 use the `socal12` samples (`make_samples.py --region socal12`, after
+The models of Section 4.4 use the `socal12` samples (`make_samples.py --region socal12`, after
 `snakemake -c4 data/norm/socal12.json data/outage_patterns/socal12.json`): Retrain is
 `train.py --model attention --region socal12 --seed S`, and fine-tuning, which starts from the attention model
 of `socal` with the same seed, is `train.py --model finetune --variant ft_emb|ft_enc|ft --seed S`.
@@ -119,18 +119,21 @@ A new model file replaces the published one at the same path.
 
 | File | Key | Paper | Difference |
 |---|---|---|---|
-| `results/evaluation_4_1.json` | `<region>.groups`, `<region>.all`, `<region>.two_or_more_neighbors` | Table 4 | `attention-<method>`, with the best baseline of each group in `best_baseline` |
-| | `<region>.nrmse` | Table 5 | |
-| | `<region>.outage_type` | Table 6 | `partial-complete` |
-| | `member_rmse_m` of each method in `<region>.all` | Appendix B | |
-| `results/evaluation_4_2.json` | `added_buoys.<buoy>` (`46239`, `46047`) | Table 7 | `<method>-none` |
-| | `original_buoys` | Table 8 | `<method>-base` |
+| `results/evaluation_regions.json` | `<region>.groups`, `<region>.all`, `<region>.two_or_more_neighbors` | Table 5 | `attention-<method>`, with the best baseline in `best_baseline` |
+| | `<region>.nrmse` | Table 6 | |
+| | `<region>.outage_type.complete`, `.partial`, `.partial-complete` | Table 7 | `attention-<method>`, `partial-complete` |
+| | `member_rmse_m` of each method in `<region>.all` | Table B.1 | |
+| `results/evaluation_added_buoys.json` | `added_buoys.<buoy>.complete` (`46239`, `46047`) and `added_buoys.46047.partial` | Table 8 | `<method>-none` |
+| | `original_buoys.complete`, `.partial` | Table 9 | `<method>-base` |
 
 Each entry holds `methods`, the RMSE of each method, and `differences`, the difference of two RMSEs on the same test
-samples, written `A-B` for RMSE<sub>A</sub> − RMSE<sub>B</sub> as in the captions of the tables. Every RMSE is in meters
-under recorded outages, with its 95% confidence interval from the block bootstrap of Section 3.4 (blocks of 240 h).
+samples, written `A-B` for RMSE<sub>A</sub> − RMSE<sub>B</sub> as in the captions of the tables. Every RMSE is in meters, with its 95% confidence interval from the block bootstrap of Section 3.4 (blocks of 240 h).
+The main results are in complete outages, in which no sensor of the target reports (outage pattern 0). Partial outages, in which
+the target's anemometer, barometer, or sea surface temperature sensor still reports, weight the seven partial patterns by the
+target's training-year shares, renormalized to sum to one, and are scored at the NDBC buoys, the targets that have them (Eq. 5 of
+the paper). The neighbors enter as recorded in both. The models are selected by the validation RMSE weighted over all eight patterns.
 The interpolators are scored on the test samples with two or more reporting neighbors (`two_or_more_neighbors`).
-Table 4 leaves the difference blank for the two groups with too few test samples for a reliable comparison, the Southern
+Table 5 leaves the difference blank for the two groups with too few test samples for a reliable comparison, the Southern
 California group with six or fewer reporting neighbors (209 samples) and the Gulf of Mexico group with one (10 samples),
 whose differences are still given in the JSON.
 

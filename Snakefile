@@ -31,7 +31,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        "results/evaluation_4_1.json", "results/evaluation_4_2.json",
+        "results/evaluation_regions.json", "results/evaluation_added_buoys.json",
 
 
 rule aligned:
@@ -163,7 +163,7 @@ rule evaluate:
         expand("predictions/expansion/{rung}.nc", rung=RUNGS), expand("predictions/added_buoys/{m}_{b}.nc", m=ADDED_METHODS, b=ADDED),
         expand("data/obs/{r}.nc", r=REGIONS), "data/outage_patterns/socal12.json",
     output:
-        "results/evaluation_4_1.json", "results/evaluation_4_2.json",
+        "results/evaluation_regions.json", "results/evaluation_added_buoys.json",
     shell:
         "{PY} scripts/evaluate.py"
 

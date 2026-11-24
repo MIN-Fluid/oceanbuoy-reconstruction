@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this code, the data files, or the trained models, please cite them as below."
-title: "An attention model for real-time wave height reconstruction from incomplete buoy networks: code, data, and trained models"
+title: "A buoy-token attention model for real-time significant wave height reconstruction during outages: code, data, and trained models"
 type: software
-version: 1.0.0
+version: 1.1.0
 license: MIT
 authors:
   - family-names: Oh

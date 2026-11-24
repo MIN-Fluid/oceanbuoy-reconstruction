@@ -34,7 +34,13 @@ def mean_pairwise_r(region: str) -> float:
     return float(np.mean(rr))
 
 
-def section_4_1(cfg: dict) -> dict:
+def _pairs(names: list[str]) -> list[tuple[str, str]]:
+    return [("attention", m) for m in names if m != "attention"]
+
+
+def evaluate_regions(cfg: dict) -> dict:
+    """Sections 4.2-4.3 and Appendix B of the paper. Complete outages (pattern 0) on every test sample, the interpolators on the samples
+    with two or more reporting neighbors; partial outages (patterns 1-7 weighted by the training-year shares) at the NDBC buoys."""
     out = {}
     for region in EV.REGIONS:
         pi, stations = pi_train(region)
@@ -47,7 +53,7 @@ def section_4_1(cfg: dict) -> dict:
         W = EV.pattern_weights(pi, tg)
         sq, msq = {}, {}
         for m in LEARNED:
-            sq[m], msq[m] = EV.weighted_sq(P[m]["pred"], y, W)
+            sq[m], msq[m] = EV.complete_sq(P[m]["pred"], y)
         ip = {}
         for m in INTERP:
             d = EV.read_predictions(PRED / m / f"{region}.nc")
@@ -55,7 +61,8 @@ def section_4_1(cfg: dict) -> dict:
             ip[m] = (d["pred"] - y) ** 2
         ge2 = np.nonzero(nl >= 2)[0]
         boot = EV.Bootstrap(t, y, region, cfg)
-        reg = {"stations": stations, "all": EV.score(boot, sq, [("attention", "mlp"), ("attention", "token_mlp")], msq)}
+        reg = {"stations": stations, "all": EV.score(boot, sq, _pairs(list(LEARNED)), msq)}
+        reg["all"]["best_baseline"] = min((m for m in LEARNED if m != "attention"), key=lambda m: reg["all"]["methods"][m]["rmse_m"])
         boot2 = EV.Bootstrap(t[ge2], y[ge2], region, cfg)
         reg["two_or_more_neighbors"] = EV.score(boot2, {m: v[ge2] for m, v in (ip | sq).items()}, [])
         groups = []
@@ -63,20 +70,21 @@ def section_4_1(cfg: dict) -> dict:
             r = np.nonzero((nl >= lo) & (nl <= hi))[0]
             g_sq = {m: v[r] for m, v in sq.items()} | ({m: v[r] for m, v in ip.items()} if lo >= 2 else {})
             gb = EV.Bootstrap(t[r], y[r], region, cfg)
-            baselines = [m for m in g_sq if m != "attention"]
             first = EV.score(gb, g_sq, [])
-            best = min(baselines, key=lambda m: first["methods"][m]["rmse_m"])
-            pairs = [("attention", "mlp"), ("attention", "token_mlp")] + ([("attention", best)] if best not in ("mlp", "token_mlp") else [])
-            sc = EV.score(gb, g_sq, pairs)
+            best = min((m for m in g_sq if m != "attention"), key=lambda m: first["methods"][m]["rmse_m"])
+            sc = EV.score(gb, g_sq, [("attention", best)])
             groups.append({"n_neighbors": [lo, hi], "best_baseline": best, **sc})
         reg["groups"] = groups
+        psq = {m: EV.partial_sq(P[m]["pred"], y, W) for m in LEARNED}
+        ok = psq["attention"][2]
+        tb = EV.Bootstrap(t[ok], y[ok], region, cfg)
         by_type = {}
-        for m in LEARNED:
-            c, w, ok = EV.outage_type_sq(P[m]["pred"], y, W)
-            tb = EV.Bootstrap(t[ok], y[ok], region, cfg)
-            sc = EV.score(tb, {"complete": c[ok], "partial": w[ok]}, [("partial", "complete")])
-            by_type[m] = {"n_samples": sc["n_samples"], "complete_rmse_m": sc["methods"]["complete"]["rmse_m"],
-                          "partial_rmse_m": sc["methods"]["partial"]["rmse_m"], "partial-complete": sc["differences"]["partial-complete"]}
+        for cond, src in (("complete", {m: sq[m][ok] for m in LEARNED}), ("partial", {m: psq[m][0][ok] for m in LEARNED})):
+            sc = EV.score(tb, src, _pairs(list(LEARNED)))
+            sc["best_baseline"] = min((m for m in LEARNED if m != "attention"), key=lambda m: sc["methods"][m]["rmse_m"])
+            by_type[cond] = sc
+        by_type["partial-complete"] = {m: EV.score(tb, {"complete": sq[m][ok], "partial": psq[m][0][ok]}, [("partial", "complete")])["differences"]["partial-complete"]
+                                       for m in LEARNED}
         reg["outage_type"] = by_type
         sigma = float(y.std())
         reg["nrmse"] = {"sigma_m": sigma, "mean_pairwise_r": mean_pairwise_r(region),
@@ -86,34 +94,47 @@ def section_4_1(cfg: dict) -> dict:
     return out
 
 
-def section_4_2(cfg: dict) -> dict:
+def evaluate_added_buoys(cfg: dict) -> dict:
+    """Section 4.4 of the paper: the ten original buoys (complete outages on every sample, partial outages at the six NDBC buoys) and the
+    two added buoys (complete outages; partial outages at 46047, the CDIP buoy 46239 having none)."""
     pi, _ = pi_train("socal")
     head = EV.read_predictions(PRED / "attention" / "socal.nc")
     y, t, tg = head["truth"], head["t"], head["target"]
     W = EV.pattern_weights(pi, tg)
-    sq = {"base": EV.weighted_sq(head["pred"], y, W)[0]}
+    preds = {"base": head["pred"]}
     for name in LADDER:
         d = EV.read_predictions(PRED / "expansion" / f"{name}.nc")
         assert np.array_equal(d["target"], tg) and np.array_equal(d["t"], t) and d["seeds"] == head["seeds"]
-        sq[name] = EV.weighted_sq(d["pred"], y, W)[0]
+        preds[name] = d["pred"]
     boot = EV.Bootstrap(t, y, "socal", cfg)
-    out = {"original_buoys": EV.score(boot, sq, [(m, "base") for m in LADDER])}
+    original = {"complete": EV.score(boot, {m: EV.complete_sq(v, y)[0] for m, v in preds.items()}, [(m, "base") for m in LADDER])}
+    part = {m: EV.partial_sq(v, y, W) for m, v in preds.items()}
+    ok = part["base"][2]
+    original["partial"] = EV.score(EV.Bootstrap(t[ok], y[ok], "socal", cfg), {m: v[0][ok] for m, v in part.items()}, [(m, "base") for m in LADDER])
+    out = {"original_buoys": original}
     states = json.loads((ROOT / "data" / "outage_patterns" / "socal12.json").read_text())
     pi12 = np.asarray(states["pi_b_train"], float)
     added = {}
     for b, g in ADDED.items():
-        sqb = {}
+        comp, par = {}, {}
         for name in ADDED_METHODS:
             d = EV.read_predictions(PRED / "added_buoys" / f"{name}_{b}.nc")
             yb, n = d["truth"], len(d["truth"])
             Wb = [np.full(n, pi12[g, p]) for p in range(8)]
             if d["pred"].ndim == 3:
-                sqb[name] = EV.weighted_sq(d["pred"], yb, Wb)[0]
+                comp[name] = EV.complete_sq(d["pred"], yb)[0]
+                ps, _, okb = EV.partial_sq(d["pred"], yb, Wb)
+                if okb.all():
+                    par[name] = ps
             else:
-                sqb[name] = sum(np.asarray(Wb[p], float) * (d["pred"] - yb) ** 2 for p in range(8))
+                comp[name] = (d["pred"] - yb) ** 2
+                if pi12[g, 1:].sum() > 0:
+                    par[name] = comp[name]
             tb = d["t"]
         bb = EV.Bootstrap(tb, yb, "socal", cfg)
-        added[b] = EV.score(bb, sqb, [(m, "none") for m in ADDED_METHODS if m != "none"])
+        added[b] = {"complete": EV.score(bb, comp, [(m, "none") for m in ADDED_METHODS if m != "none"])}
+        if len(par) == len(ADDED_METHODS):
+            added[b]["partial"] = EV.score(bb, par, [(m, "none") for m in ADDED_METHODS if m != "none"])
     out["added_buoys"] = added
     return out
 
@@ -122,9 +143,9 @@ def main() -> None:
     cfg = EV.load_score_config(ROOT)
     out_dir = ROOT / "results"
     out_dir.mkdir(exist_ok=True)
-    (out_dir / "evaluation_4_1.json").write_text(json.dumps(section_4_1(cfg), indent=1))
-    (out_dir / "evaluation_4_2.json").write_text(json.dumps(section_4_2(cfg), indent=1))
-    print("->", out_dir / "evaluation_4_1.json", out_dir / "evaluation_4_2.json")
+    (out_dir / "evaluation_regions.json").write_text(json.dumps(evaluate_regions(cfg), indent=1))
+    (out_dir / "evaluation_added_buoys.json").write_text(json.dumps(evaluate_added_buoys(cfg), indent=1))
+    print("->", out_dir / "evaluation_regions.json", out_dir / "evaluation_added_buoys.json")
 
 
 if __name__ == "__main__":
