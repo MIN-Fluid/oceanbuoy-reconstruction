@@ -126,21 +126,21 @@ A new model file replaces the published one at the same path.
 
 | File | Key | Paper | Difference |
 |---|---|---|---|
-| `results/evaluation_regions.json` | `<region>.groups`, `<region>.all`, `<region>.two_or_more_neighbors` | Table 5 | `attention-<method>`, with the best baseline in `best_baseline` |
-| | `<region>.nrmse` | Table 6 | |
-| | `<region>.outage_type.complete`, `.partial`, `.partial-complete` | Table 7 | `attention-<method>`, `partial-complete` |
+| `results/evaluation_regions.json` | `<region>.groups`, `<region>.all`, `<region>.two_or_more_neighbors` | Table 6 | `attention-<method>`, with the best baseline in `best_baseline` |
+| | `<region>.nrmse` | Table 7 | |
+| | `<region>.outage_type.complete`, `.partial`, `.partial-complete` | Table 8 | `attention-<method>`, `partial-complete` |
 | | `member_rmse_m` of each method in `<region>.all` | Table B.1 | |
-| `results/evaluation_added_buoys.json` | `added_buoys.<buoy>.complete` (`46239`, `46047`) and `added_buoys.46047.partial` | Table 8 | `<method>-none` |
-| | `original_buoys.complete`, `.partial` | Table 9 | `<method>-base` |
+| `results/evaluation_added_buoys.json` | `added_buoys.<buoy>.complete` (`46239`, `46047`) and `added_buoys.46047.partial` | Table 9 | `<method>-none` |
+| | `original_buoys.complete`, `.partial` | Table 10 | `<method>-base` |
 
 Each entry holds `methods`, the RMSE of each method, and `differences`, the difference of two RMSEs on the same test
 samples, written `A-B` for RMSE<sub>A</sub> − RMSE<sub>B</sub> as in the captions of the tables. Every RMSE is in meters, with its 95% confidence interval from the block bootstrap of Section 3.4 (blocks of 240 h).
 The main results are in complete outages, in which no sensor of the target reports (outage pattern 0). Partial outages, in which
 the target's anemometer, barometer, or sea surface temperature sensor still reports, weight the seven partial patterns by the
-target's training-year occurrence rates, renormalized to sum to one, and are scored at the NDBC buoys, the targets that have them (Eq. 5 of
+target's training-year occurrence rates, renormalized to sum to one, and are scored at the NDBC buoys, the targets that have them (Eq. 7 of
 the paper). The neighbors enter as recorded in both. The models are selected by the validation RMSE weighted over all eight patterns.
 The interpolators are scored on the test samples with two or more reporting neighbors (`two_or_more_neighbors`).
-Table 5 leaves the difference blank for the two groups with too few test samples for a reliable comparison, the Southern
+Table 6 leaves the difference blank for the two groups excluded from the comparison of the methods, the Southern
 California group with six or fewer reporting neighbors (209 samples) and the Gulf of Mexico group with one (10 samples),
 whose differences are still given in the JSON.
 
