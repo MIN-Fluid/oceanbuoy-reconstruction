@@ -21,8 +21,8 @@ It does not include the analyses of Sections 4.1 and 4.5, the tables of Section 
 | Module | Role |
 |---|---|
 | `config.py`, `io.py`, `rng.py` | Paths, settings, and seeds; writing files; the random-number streams |
-| `data.py`, `sensor_groups.py`, `states.py` | Hourly records, removal of wave-sensor faults, normalization, sensor groups, outage patterns |
-| `samples.py`, `build_samples.py`, `validation.py` | Training and validation samples with emulated outages, the validation RMSE weighted over the eight outage patterns |
+| `data.py`, `sensor_groups.py`, `states.py` | Hourly records, removal of outliers, normalization, sensor groups, outage patterns |
+| `samples.py`, `build_samples.py`, `validation.py` | Training and validation samples with synthetic outages, the validation RMSE weighted over the eight outage patterns |
 | `views.py` | Inputs: tokens for the attention model and the token MLP, fixed rows for the ridge regression and the MLP |
 | `models.py`, `train.py`, `ridge.py` | The networks, their training (`fit`) and fine-tuning, the ridge regression |
 | `interp.py` | The interpolators: inverse-distance weighting (IDW), ordinary kriging (OK), and anisotropic kriging (AK) |
@@ -69,6 +69,13 @@ without any change. Five of the buoys, 46218, 46219, 46239, 46251, and 46259, ar
 CDIP data are cited as https://doi.org/10.18437/C7WC72.
 `python download/download_ndbc.py` downloads the files again from NDBC; files already in `data/raw/` are skipped.
 
+Before the samples are built, significant wave heights that stay far below those of the other buoys of the region are
+removed as outliers (`scripts/find_wave_faults.py`, rule in `src/oceanbuoy/data.py`). An outlier is a run of at least
+12 consecutive hours in which a buoy reports a significant wave height below 0.1 m and no dominant period, while the
+median significant wave height of the other buoys of the region over the run is at least 0.5 m. The wave variables of
+each run are set to missing. Every run found lies in the training years (2016–2022); the runs, with their buoy, start,
+end and length, are written to `data/qc/suspect_wave_runs.json` by the pipeline.
+
 ## Reproducing the results with the trained models
 
 ```bash
@@ -76,7 +83,7 @@ snakemake -c4
 ```
 
 This runs, in order: alignment of the raw files to the hourly grid (`data/aligned/`), the records before and after
-the removal of wave-sensor faults (`data/obs_unscreened/`, `data/qc/`, `data/obs/`), normalization constants
+the removal of outliers (`data/obs_unscreened/`, `data/qc/`, `data/obs/`), normalization constants
 (`data/norm/`), the test samples (`data/samples/test/`), the outage patterns of `socal12` (`data/outage_patterns/`),
 the fit and the estimates of the interpolators (`models/interp/`, `predictions/idw|ok|ak/`), the estimates of the
 learned methods and the attention model from the trained models, the estimates of Section 4.4 (`predictions/expansion/`,
@@ -130,7 +137,7 @@ Each entry holds `methods`, the RMSE of each method, and `differences`, the diff
 samples, written `A-B` for RMSE<sub>A</sub> − RMSE<sub>B</sub> as in the captions of the tables. Every RMSE is in meters, with its 95% confidence interval from the block bootstrap of Section 3.4 (blocks of 240 h).
 The main results are in complete outages, in which no sensor of the target reports (outage pattern 0). Partial outages, in which
 the target's anemometer, barometer, or sea surface temperature sensor still reports, weight the seven partial patterns by the
-target's training-year shares, renormalized to sum to one, and are scored at the NDBC buoys, the targets that have them (Eq. 5 of
+target's training-year occurrence rates, renormalized to sum to one, and are scored at the NDBC buoys, the targets that have them (Eq. 5 of
 the paper). The neighbors enter as recorded in both. The models are selected by the validation RMSE weighted over all eight patterns.
 The interpolators are scored on the test samples with two or more reporting neighbors (`two_or_more_neighbors`).
 Table 5 leaves the difference blank for the two groups with too few test samples for a reliable comparison, the Southern
